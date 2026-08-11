@@ -3,12 +3,17 @@
 Files in this section: `README.md`, `eyes.h`, `eyes.c`, `eyes_map.c`,
 `page_picture.txt`, `output/`
 
-## Rule (truce)
+## Purpose (do not rewrite this plan)
 
-A pixel is a pixel. Copy pixels off the document as binary marks. Rebuild
-the page from those marks. Error = any pixel that cannot rebuild.
+Two sides of the same sight:
 
-One honest pass is enough. No 20× forever loop.
+1. **Model / rebuild** — deposit pixels as binary marks, rebuild, measure
+   pixel convergence. Error = any pixel that cannot rebuild.
+2. **She / picture** — while the page shows, she sees the picture and
+   learns color subconsciously. Color is not a separate drill here.
+
+A pixel is a pixel. One honest collect → rebuild → diff. No 20× forever
+loop. Do not swap this plan for harness theater or new theories.
 
 ## What works now
 

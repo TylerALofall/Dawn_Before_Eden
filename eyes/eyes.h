@@ -6,17 +6,13 @@
 /*
  * eyes — sight core (step 1)
  *
- * Rule (truce): a pixel is a pixel. Copy pixels off the document as
- * binary marks, rebuild the page from those marks, and count every
- * pixel that cannot rebuild. That count is the only error.
+ * Dual purpose (locked — do not reinvent):
+ *   Model: binary deposit → rebuild → pixel convergence count.
+ *   She:   sees the picture; color is absorbed subconsciously.
  *
- * One honest path: accept RGBA (or load a real picture file)
- *   -> deposit R G B A + mono BIT
- *   -> read deposit back
- *   -> rebuild
- *   -> diff
- *
- * No 20× cycle hunt. No generated fake pages as product truth.
+ * Rule (truce): a pixel is a pixel. Error = cannot rebuild.
+ * Path: RGBA in → deposit R G B A + mono BIT → read back → rebuild → diff.
+ * One honest pass. No 20× hunt. No fake generators as product truth.
  * Host camera / live pixels: NOT DONE (see eyes/README.md).
  */
 
