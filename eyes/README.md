@@ -6,6 +6,7 @@ Files in this section: `README.md`, `eyes.h`, `eyes.c`, `eyes_map.c`,
 ## Mechanical rule (end of story)
 
 No subprocessor may touch the pixels. One core. One pass.
+Zero black box: every mark and rule is open — no hidden math.
 
 A pixel is a pixel. Deposit the marks. Rebuild from the marks.
 Error = any pixel that cannot rebuild.

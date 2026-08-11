@@ -8,6 +8,7 @@
  *
  * Mechanical rule number one: no subprocessor may touch the pixels.
  * End of story. One core. One pass over the marks. No second path.
+ * Zero black box: every mark and rule is open on the page — no hidden math.
  *
  * Pixel = pixel. Copy marks off the page, rebuild from those marks.
  * Error = any pixel that cannot rebuild.

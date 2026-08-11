@@ -10,21 +10,25 @@ int eyes_dimensions_ok(unsigned int width, unsigned int height)
            (unsigned long)width * (unsigned long)height <= EYES_MAX_PIXELS;
 }
 
-/* Ink mark for one pixel — used only inside the deposit write walk. */
+/*
+ * Ink mark for one pixel — only inside the deposit write walk.
+ * Open rule (zero black box): plain mean of R,G,B.
+ * mean >= 128 -> paper '0'; else ink '1'. No weighted secret.
+ */
 static char bit_of_pixel(
     const unsigned char *rgba,
     unsigned long pixel_index
 )
 {
     unsigned long base;
-    unsigned int luma;
+    unsigned int mean;
 
     base = pixel_index * 4UL;
-    luma = ((unsigned int)rgba[base] * 30U +
-            (unsigned int)rgba[base + 1UL] * 59U +
-            (unsigned int)rgba[base + 2UL] * 11U) / 100U;
+    mean = ((unsigned int)rgba[base] +
+            (unsigned int)rgba[base + 1UL] +
+            (unsigned int)rgba[base + 2UL]) / 3U;
 
-    return luma >= 128U ? '0' : '1';
+    return mean >= 128U ? '0' : '1';
 }
 
 static void strip_line_end(char *line)
