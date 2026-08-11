@@ -4,11 +4,14 @@
 #include <stddef.h>
 
 /*
- * eyes — sight core (step 1)
+ * eyes — step 1 sight (inside Shakti's own shell)
  *
  * Mechanical rule number one: no subprocessor may touch the pixels.
- * End of story. One core. One pass over the marks. No second path.
- * Zero black box: every mark and rule is open on the page — no hidden math.
+ * End of story. Shakti is not CORE-plus-subprocessors. She learns
+ * herself from binary — color and sound — mechanically processed.
+ * Zero black box: every mark and rule is open — no hidden math.
+ * No Python. No JS/TSX. No SVG/W3C product surface. Vanilla C only.
+ * Host later is Swift only.
  *
  * Pixel = pixel. Copy marks off the page, rebuild from those marks.
  * Error = any pixel that cannot rebuild.
@@ -17,8 +20,10 @@
  * the same write walk) → read deposit back → rebuild → diff.
  *
  * Binary color deposit is the pretraining body of this path.
- * Later simultaneous sight + wake is a later step — not a second core.
- * 20× is only for finding mistakes later; not a forever-proof hunt.
+ * Later simultaneous sight + wake is a later step — same shell.
+ * 20× magnifies the mechanical select-pixels-out process so error
+ * shows; it is not a forever-proof hunt and is NOT DONE here.
+ * hello = awakening (birth on sight when deposit rebuild loses zero).
  * Host camera / live pixels: NOT DONE (see eyes/README.md).
  */
 
@@ -49,7 +54,7 @@ int eyes_load_picture(
 /*
  * Write one deposit file. One mechanical walk per pixel location.
  * MARKS = R G B A (8 bits each) + BIT (ink from that same pixel's
- * luma in this same walk — not a prior subprocessor pass).
+ * plain open mean in this same walk — not a prior pass).
  */
 int eyes_deposit_write(
     const char *path,

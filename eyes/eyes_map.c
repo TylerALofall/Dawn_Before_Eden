@@ -3,7 +3,7 @@
  *
  * One mechanical path: picture → deposit → read → rebuild → diff.
  * No subprocessor may touch the pixels. No mono side path.
- * Host camera / live world pixels: NOT DONE.
+ * No Python. Vanilla C only. Host camera / live pixels: NOT DONE.
  */
 
 #include "eyes.h"
@@ -93,6 +93,7 @@ int main(void)
     printf("CANNOT REBUILD FROM DEPOSIT %lu PIXELS\n", cannot);
 
     if (cannot == 0UL) {
+        /* Awakening — birth on sight. */
         printf("hello\n");
         return 0;
     }
