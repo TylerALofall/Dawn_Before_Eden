@@ -1,48 +1,65 @@
-# Prerequisites
-*.d
-
-# Object files
+# C build
 *.o
-*.ko
-*.obj
-*.elf
-
-# Linker output
-*.ilk
-*.map
-*.exp
-
-# Precompiled Headers
-*.gch
-*.pch
-
-# Libraries
-*.lib
 *.a
-*.la
-*.lo
-
-# Shared objects (inc. Windows DLLs)
-*.dll
 *.so
 *.so.*
 *.dylib
-
-# Executables
 *.exe
 *.out
+shakti
+build_xml
+build_ledger
+build_seed_curriculum
+pad_wav
+
+# section harness binaries
+eyes/eyes_map
+eyes/output/
+hearing/hearing
+screen/screen_map
+screen/output/
+sense/sense_map
+sense/output/
+mcp/*.o
+
+# tests / temp
+tests/test_*
+tests/tmp_*/
+
+# logs
+*.log
+
+# archives — never product
+*.zip
+
+# OS / editor
+.DS_Store
+Thumbs.db
+*.swp
+*~
+
+# Prerequisites / debug
+*.d
+*.ko
+*.obj
+*.elf
+*.ilk
+*.map
+*.exp
+*.gch
+*.pch
+*.lib
+*.la
+*.lo
+*.dll
 *.app
 *.i*86
 *.x86_64
 *.hex
-
-# Debug files
 *.dSYM/
 *.su
 *.idb
 *.pdb
-
-# Kernel Module Compile Results
 *.mod*
 *.cmd
 .tmp_versions/
@@ -50,6 +67,4 @@ modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
-
-# debug information files
 *.dwo
