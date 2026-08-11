@@ -3,8 +3,6 @@
 #include <stdio.h>
 #include <string.h>
 
-static char g_line[EYES_LINE_MAX];
-
 int eyes_dimensions_ok(unsigned int width, unsigned int height)
 {
     return width > 0U &&
@@ -140,6 +138,7 @@ int eyes_load_picture(
     unsigned int width;
     unsigned int height;
     unsigned int row;
+    char line[EYES_LINE_MAX];
 
     if (path == NULL || rgba == NULL ||
         width_out == NULL || height_out == NULL) {
@@ -155,16 +154,16 @@ int eyes_load_picture(
     width = 0U;
     height = 0U;
 
-    if (fgets(g_line, (int)sizeof(g_line), file) == NULL ||
-        (strip_line_end(g_line), strcmp(g_line, "BINARY_PICTURE_V1")) != 0 ||
-        fgets(g_line, (int)sizeof(g_line), file) == NULL ||
-        sscanf(g_line, "WIDTH=%u", &width) != 1 ||
-        fgets(g_line, (int)sizeof(g_line), file) == NULL ||
-        sscanf(g_line, "HEIGHT=%u", &height) != 1 ||
-        fgets(g_line, (int)sizeof(g_line), file) == NULL ||
-        strncmp(g_line, "PALETTE", 7UL) != 0 ||
-        fgets(g_line, (int)sizeof(g_line), file) == NULL ||
-        (strip_line_end(g_line), strcmp(g_line, "ROWS")) != 0 ||
+    if (fgets(line, (int)sizeof(line), file) == NULL ||
+        (strip_line_end(line), strcmp(line, "BINARY_PICTURE_V1")) != 0 ||
+        fgets(line, (int)sizeof(line), file) == NULL ||
+        sscanf(line, "WIDTH=%u", &width) != 1 ||
+        fgets(line, (int)sizeof(line), file) == NULL ||
+        sscanf(line, "HEIGHT=%u", &height) != 1 ||
+        fgets(line, (int)sizeof(line), file) == NULL ||
+        strncmp(line, "PALETTE", 7UL) != 0 ||
+        fgets(line, (int)sizeof(line), file) == NULL ||
+        (strip_line_end(line), strcmp(line, "ROWS")) != 0 ||
         !eyes_dimensions_ok(width, height) ||
         rgba_capacity < (unsigned long)width * (unsigned long)height * 4UL) {
         fclose(file);
@@ -174,14 +173,14 @@ int eyes_load_picture(
     for (row = 0U; row < height; ++row) {
         unsigned int column;
 
-        if (fgets(g_line, (int)sizeof(g_line), file) == NULL) {
+        if (fgets(line, (int)sizeof(line), file) == NULL) {
             fclose(file);
             return 0;
         }
 
-        strip_line_end(g_line);
+        strip_line_end(line);
 
-        if ((unsigned long)strlen(g_line) != (unsigned long)width) {
+        if ((unsigned long)strlen(line) != (unsigned long)width) {
             fclose(file);
             return 0;
         }
@@ -192,7 +191,7 @@ int eyes_load_picture(
             unsigned char green;
             unsigned char blue;
 
-            if (!palette_rgb(g_line[column], &red, &green, &blue)) {
+            if (!palette_rgb(line[column], &red, &green, &blue)) {
                 fclose(file);
                 return 0;
             }
@@ -303,6 +302,7 @@ int eyes_deposit_read(
     unsigned int header_page;
     unsigned int header_width;
     unsigned int header_height;
+    char line[EYES_LINE_MAX];
 
     if (path == NULL || rgba == NULL || bits == NULL ||
         !eyes_dimensions_ok(width, height)) {
@@ -326,16 +326,16 @@ int eyes_deposit_read(
     header_width = 0U;
     header_height = 0U;
 
-    if (fgets(g_line, (int)sizeof(g_line), file) == NULL ||
-        (strip_line_end(g_line), strcmp(g_line, "BINARY_DEPOSIT_V1")) != 0 ||
-        fgets(g_line, (int)sizeof(g_line), file) == NULL ||
-        sscanf(g_line, "PAGE=%u", &header_page) != 1 ||
-        fgets(g_line, (int)sizeof(g_line), file) == NULL ||
-        sscanf(g_line, "WIDTH=%u", &header_width) != 1 ||
-        fgets(g_line, (int)sizeof(g_line), file) == NULL ||
-        sscanf(g_line, "HEIGHT=%u", &header_height) != 1 ||
-        fgets(g_line, (int)sizeof(g_line), file) == NULL ||
-        (strip_line_end(g_line), strcmp(g_line, "MARKS=R G B A BIT")) != 0 ||
+    if (fgets(line, (int)sizeof(line), file) == NULL ||
+        (strip_line_end(line), strcmp(line, "BINARY_DEPOSIT_V1")) != 0 ||
+        fgets(line, (int)sizeof(line), file) == NULL ||
+        sscanf(line, "PAGE=%u", &header_page) != 1 ||
+        fgets(line, (int)sizeof(line), file) == NULL ||
+        sscanf(line, "WIDTH=%u", &header_width) != 1 ||
+        fgets(line, (int)sizeof(line), file) == NULL ||
+        sscanf(line, "HEIGHT=%u", &header_height) != 1 ||
+        fgets(line, (int)sizeof(line), file) == NULL ||
+        (strip_line_end(line), strcmp(line, "MARKS=R G B A BIT")) != 0 ||
         header_page != page_number ||
         header_width != width ||
         header_height != height) {
@@ -353,9 +353,9 @@ int eyes_deposit_read(
         char bit_mark[2];
         unsigned long base;
 
-        if (fgets(g_line, (int)sizeof(g_line), file) == NULL ||
+        if (fgets(line, (int)sizeof(line), file) == NULL ||
             sscanf(
-                g_line,
+                line,
                 "X=%lu Y=%lu %8[01] %8[01] %8[01] %8[01] %1[01]",
                 &x, &y, red_marks, green_marks, blue_marks,
                 alpha_marks, bit_mark
@@ -381,8 +381,8 @@ int eyes_deposit_read(
 
     bits[pixel_count] = '\0';
 
-    if (fgets(g_line, (int)sizeof(g_line), file) == NULL ||
-        (strip_line_end(g_line), strcmp(g_line, "END")) != 0) {
+    if (fgets(line, (int)sizeof(line), file) == NULL ||
+        (strip_line_end(line), strcmp(line, "END")) != 0) {
         fclose(file);
         return 0;
     }
