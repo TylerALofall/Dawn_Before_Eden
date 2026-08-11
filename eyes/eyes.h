@@ -6,13 +6,18 @@
 /*
  * eyes — sight core (step 1)
  *
- * Dual purpose (locked — do not reinvent):
- *   Model: binary deposit → rebuild → pixel convergence count.
- *   She:   sees the picture; color is absorbed subconsciously.
+ * Mechanical rule number one: no subprocessor may touch the pixels.
+ * End of story. One core. One pass over the marks. No second path.
  *
- * Rule (truce): a pixel is a pixel. Error = cannot rebuild.
- * Path: RGBA in → deposit R G B A + mono BIT → read back → rebuild → diff.
- * One honest pass. No 20× hunt. No fake generators as product truth.
+ * Pixel = pixel. Copy marks off the page, rebuild from those marks.
+ * Error = any pixel that cannot rebuild.
+ *
+ * Path: RGBA in → deposit R G B A + BIT (BIT from the same pixel in
+ * the same write walk) → read deposit back → rebuild → diff.
+ *
+ * Binary color deposit is the pretraining body of this path.
+ * Later simultaneous sight + wake is a later step — not a second core.
+ * 20× is only for finding mistakes later; not a forever-proof hunt.
  * Host camera / live pixels: NOT DONE (see eyes/README.md).
  */
 
@@ -27,19 +32,10 @@
 
 int eyes_dimensions_ok(unsigned int width, unsigned int height);
 
-/* Mono ink bit: luma < 128 -> '1' ink, else '0' paper. */
-int eyes_pull_mono(
-    const unsigned char *rgba,
-    unsigned int width,
-    unsigned int height,
-    char *bits,
-    unsigned long bits_capacity
-);
-
 /*
  * Load a real BINARY_PICTURE_V1 palette file into caller RGBA.
- * This is a file reader for known inputs — not a synthetic document
- * generator and not a host camera.
+ * File reader for known inputs — not a synthetic generator and not
+ * a host camera. Does not process pixels beyond copy into RGBA.
  */
 int eyes_load_picture(
     const char *path,
@@ -50,21 +46,21 @@ int eyes_load_picture(
 );
 
 /*
- * Write one deposit file: 5 marks per pixel location.
- * MARKS = R G B A (8 bits each) + BIT (mono ink, 1 bit).
+ * Write one deposit file. One mechanical walk per pixel location.
+ * MARKS = R G B A (8 bits each) + BIT (ink from that same pixel's
+ * luma in this same walk — not a prior subprocessor pass).
  */
 int eyes_deposit_write(
     const char *path,
     unsigned int page_number,
     unsigned int width,
     unsigned int height,
-    const unsigned char *rgba,
-    const char *bits
+    const unsigned char *rgba
 );
 
 /*
- * Read a deposit file back and rebuild RGBA + mono bits only from
- * the marks on disk.
+ * Read a deposit file back and rebuild RGBA only from the marks
+ * on disk. No other processor touches the rebuilt pixels.
  */
 int eyes_deposit_read(
     const char *path,
@@ -72,9 +68,7 @@ int eyes_deposit_read(
     unsigned int width,
     unsigned int height,
     unsigned char *rgba,
-    unsigned long rgba_capacity,
-    char *bits,
-    unsigned long bits_capacity
+    unsigned long rgba_capacity
 );
 
 /*
@@ -86,15 +80,6 @@ unsigned long eyes_diff(
     const unsigned char *reconstructed,
     unsigned int width,
     unsigned int height
-);
-
-/* Rebuild black/white page from mono bits alone (lossy for color). */
-int eyes_rebuild_mono(
-    const char *bits,
-    unsigned int width,
-    unsigned int height,
-    unsigned char *rgba,
-    unsigned long rgba_capacity
 );
 
 #endif

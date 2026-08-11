@@ -1,17 +1,14 @@
 /*
  * eyes_map — tiny harness for eyes step 1.
  *
- * One real picture file in -> mono pull -> binary deposit -> read back
- * -> rebuild -> print true cannot-rebuild count. No 20× loop. No
- * generated color-band theater. No fake SUCCESS claim.
- *
+ * One mechanical path: picture → deposit → read → rebuild → diff.
+ * No subprocessor may touch the pixels. No mono side path.
  * Host camera / live world pixels: NOT DONE.
  */
 
 #include "eyes.h"
 
 #include <stdio.h>
-#include <string.h>
 
 #ifdef _WIN32
 #include <direct.h>
@@ -26,13 +23,9 @@
 #define EYES_OUTPUT_DIR  "eyes/output"
 #define EYES_DEPOSIT     "eyes/output/page1_deposit.txt"
 #define EYES_RGBA_CAP    (EYES_MAX_PIXELS * 4UL)
-#define EYES_BITS_CAP    (EYES_MAX_PIXELS + 1UL)
 
 static unsigned char g_original[EYES_RGBA_CAP];
 static unsigned char g_rebuilt[EYES_RGBA_CAP];
-static unsigned char g_bitonly[EYES_RGBA_CAP];
-static char g_bits[EYES_BITS_CAP];
-static char g_bits_back[EYES_BITS_CAP];
 
 int main(void)
 {
@@ -40,14 +33,14 @@ int main(void)
     unsigned int height;
     unsigned long pixels;
     unsigned long cannot;
-    unsigned long bit_loses;
 
     width = 0U;
     height = 0U;
 
     EYES_MKDIR(EYES_OUTPUT_DIR);
 
-    printf("eyes step 1 — one collect -> rebuild -> diff\n");
+    printf("eyes step 1 — mechanical deposit -> rebuild -> diff\n");
+    printf("rule: no subprocessor touches the pixels\n");
     printf("NOT DONE: host camera / live world pixels\n");
     printf("\n");
 
@@ -64,24 +57,12 @@ int main(void)
 
     pixels = (unsigned long)width * (unsigned long)height;
 
-    if (!eyes_pull_mono(
-            g_original,
-            width,
-            height,
-            g_bits,
-            sizeof(g_bits)
-        )) {
-        printf("FAIL: mono pull\n");
-        return 1;
-    }
-
     if (!eyes_deposit_write(
             EYES_DEPOSIT,
             1U,
             width,
             height,
-            g_original,
-            g_bits
+            g_original
         )) {
         printf("FAIL: deposit write %s\n", EYES_DEPOSIT);
         return 1;
@@ -93,9 +74,7 @@ int main(void)
             width,
             height,
             g_rebuilt,
-            sizeof(g_rebuilt),
-            g_bits_back,
-            sizeof(g_bits_back)
+            sizeof(g_rebuilt)
         )) {
         printf("FAIL: deposit read %s\n", EYES_DEPOSIT);
         return 1;
@@ -108,36 +87,16 @@ int main(void)
         return 1;
     }
 
-    if (!eyes_rebuild_mono(
-            g_bits_back,
-            width,
-            height,
-            g_bitonly,
-            sizeof(g_bitonly)
-        )) {
-        printf("FAIL: mono bit rebuild\n");
-        return 1;
-    }
-
-    bit_loses = eyes_diff(g_original, g_bitonly, width, height);
-
-    if (bit_loses == (unsigned long)-1) {
-        printf("FAIL: bit-only diff rejected\n");
-        return 1;
-    }
-
     printf("PAGE 1  %ux%u\n", width, height);
     printf("PIXELS %lu  5 MARKS EACH\n", pixels);
     printf("DEPOSIT %s\n", EYES_DEPOSIT);
     printf("CANNOT REBUILD FROM DEPOSIT %lu PIXELS\n", cannot);
-    printf("BIT MARK ALONE LOSES %lu PIXELS\n", bit_loses);
 
     if (cannot == 0UL) {
         printf("hello\n");
         return 0;
     }
 
-    /* True failure only when full RGBA deposit cannot rebuild. */
     printf("NOT DONE: deposit rebuild still loses pixels\n");
     return 1;
 }

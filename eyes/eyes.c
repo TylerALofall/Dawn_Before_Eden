@@ -10,17 +10,21 @@ int eyes_dimensions_ok(unsigned int width, unsigned int height)
            (unsigned long)width * (unsigned long)height <= EYES_MAX_PIXELS;
 }
 
-static unsigned int luma_of(
+/* Ink mark for one pixel — used only inside the deposit write walk. */
+static char bit_of_pixel(
     const unsigned char *rgba,
     unsigned long pixel_index
 )
 {
     unsigned long base;
+    unsigned int luma;
 
     base = pixel_index * 4UL;
-    return ((unsigned int)rgba[base] * 30U +
+    luma = ((unsigned int)rgba[base] * 30U +
             (unsigned int)rgba[base + 1UL] * 59U +
             (unsigned int)rgba[base + 2UL] * 11U) / 100U;
+
+    return luma >= 128U ? '0' : '1';
 }
 
 static void strip_line_end(char *line)
@@ -94,35 +98,6 @@ static int octet_value(const char *marks, unsigned char *value_out)
     }
 
     *value_out = (unsigned char)value;
-    return 1;
-}
-
-int eyes_pull_mono(
-    const unsigned char *rgba,
-    unsigned int width,
-    unsigned int height,
-    char *bits,
-    unsigned long bits_capacity
-)
-{
-    unsigned long pixel_count;
-    unsigned long index;
-
-    if (rgba == NULL || bits == NULL || !eyes_dimensions_ok(width, height)) {
-        return 0;
-    }
-
-    pixel_count = (unsigned long)width * (unsigned long)height;
-
-    if (bits_capacity < pixel_count + 1UL) {
-        return 0;
-    }
-
-    for (index = 0UL; index < pixel_count; ++index) {
-        bits[index] = luma_of(rgba, index) >= 128U ? '0' : '1';
-    }
-
-    bits[pixel_count] = '\0';
     return 1;
 }
 
@@ -216,8 +191,7 @@ int eyes_deposit_write(
     unsigned int page_number,
     unsigned int width,
     unsigned int height,
-    const unsigned char *rgba,
-    const char *bits
+    const unsigned char *rgba
 )
 {
     FILE *file;
@@ -225,16 +199,12 @@ int eyes_deposit_write(
     unsigned long index;
     int success;
 
-    if (path == NULL || rgba == NULL || bits == NULL ||
+    if (path == NULL || rgba == NULL ||
         !eyes_dimensions_ok(width, height)) {
         return 0;
     }
 
     pixel_count = (unsigned long)width * (unsigned long)height;
-
-    if ((unsigned long)strlen(bits) != pixel_count) {
-        return 0;
-    }
 
     file = fopen(path, "w");
 
@@ -252,8 +222,10 @@ int eyes_deposit_write(
     for (index = 0UL; success && index < pixel_count; ++index) {
         unsigned long base;
         unsigned int mark;
+        char ink;
 
         base = index * 4UL;
+        ink = bit_of_pixel(rgba, index);
 
         success = fprintf(
             file,
@@ -267,13 +239,9 @@ int eyes_deposit_write(
                       fputc(' ', file) != EOF;
         }
 
-        if (bits[index] != '0' && bits[index] != '1') {
-            success = 0;
-        } else {
-            success = success &&
-                      fputc(bits[index], file) != EOF &&
-                      fputc('\n', file) != EOF;
-        }
+        success = success &&
+                  fputc(ink, file) != EOF &&
+                  fputc('\n', file) != EOF;
     }
 
     success = success && fprintf(file, "END\n") > 0 && fflush(file) == 0;
@@ -291,9 +259,7 @@ int eyes_deposit_read(
     unsigned int width,
     unsigned int height,
     unsigned char *rgba,
-    unsigned long rgba_capacity,
-    char *bits,
-    unsigned long bits_capacity
+    unsigned long rgba_capacity
 )
 {
     FILE *file;
@@ -304,15 +270,14 @@ int eyes_deposit_read(
     unsigned int header_height;
     char line[EYES_LINE_MAX];
 
-    if (path == NULL || rgba == NULL || bits == NULL ||
+    if (path == NULL || rgba == NULL ||
         !eyes_dimensions_ok(width, height)) {
         return 0;
     }
 
     pixel_count = (unsigned long)width * (unsigned long)height;
 
-    if (rgba_capacity < pixel_count * 4UL ||
-        bits_capacity < pixel_count + 1UL) {
+    if (rgba_capacity < pixel_count * 4UL) {
         return 0;
     }
 
@@ -368,6 +333,9 @@ int eyes_deposit_read(
 
         base = index * 4UL;
 
+        /* BIT is on the deposit line; rebuild is RGBA marks only. */
+        (void)bit_mark;
+
         if (!octet_value(red_marks, &rgba[base]) ||
             !octet_value(green_marks, &rgba[base + 1UL]) ||
             !octet_value(blue_marks, &rgba[base + 2UL]) ||
@@ -375,11 +343,7 @@ int eyes_deposit_read(
             fclose(file);
             return 0;
         }
-
-        bits[index] = bit_mark[0];
     }
-
-    bits[pixel_count] = '\0';
 
     if (fgets(line, (int)sizeof(line), file) == NULL ||
         (strip_line_end(line), strcmp(line, "END")) != 0) {
@@ -421,43 +385,4 @@ unsigned long eyes_diff(
     }
 
     return drift;
-}
-
-int eyes_rebuild_mono(
-    const char *bits,
-    unsigned int width,
-    unsigned int height,
-    unsigned char *rgba,
-    unsigned long rgba_capacity
-)
-{
-    unsigned long pixel_count;
-    unsigned long index;
-
-    if (bits == NULL || rgba == NULL || !eyes_dimensions_ok(width, height)) {
-        return 0;
-    }
-
-    pixel_count = (unsigned long)width * (unsigned long)height;
-
-    if (rgba_capacity < pixel_count * 4UL ||
-        (unsigned long)strlen(bits) != pixel_count) {
-        return 0;
-    }
-
-    for (index = 0UL; index < pixel_count; ++index) {
-        unsigned char value;
-
-        if (bits[index] != '0' && bits[index] != '1') {
-            return 0;
-        }
-
-        value = bits[index] == '1' ? 0U : 255U;
-        rgba[index * 4UL] = value;
-        rgba[index * 4UL + 1UL] = value;
-        rgba[index * 4UL + 2UL] = value;
-        rgba[index * 4UL + 3UL] = 255U;
-    }
-
-    return 1;
 }
